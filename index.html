@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>家庭退休金模擬器</title>
-<script type="text/javascript" nonce="85d153b6a08242a8b0684265038" src="//local.adguard.org?ts=1790954780474&amp;type=content-script&amp;dmn=claude.ai&amp;url=https%3A%2F%2Fclaude.ai%2Fapi%2Forganizations%2F899f9914-25d2-4ce2-8430-94782632f5e5%2Ffiles%2F739561da-9313-4b5c-ae25-58f699f02e42%2Fcontents&amp;app=chrome.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="85d153b6a08242a8b0684265038" src="//local.adguard.org?ts=1790954780474&amp;name=AdGuard%20Extra&amp;type=user-script"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap">
 <style>
@@ -69,6 +69,16 @@ header.top p{margin:4px 0 0;color:var(--fg-2);max-width:62ch}
 .opt .hint{font-size:12px;color:var(--muted);line-height:1.5}
 .chk{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--fg-2);margin-top:8px;font-weight:500;line-height:1.5;cursor:pointer}
 .chk input{margin-top:3px;accent-color:var(--accent)}
+.cmp-th-cur{color:var(--accent)!important}
+td.cur,th.cur{background:var(--accent-soft)}
+td.best{font-weight:700}
+.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+@media (max-width:800px){.modes{grid-template-columns:minmax(0,1fr)}}
+.mcard{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;font-size:13px;line-height:1.6}
+.mcard h4{margin:0 0 4px;font-size:14px;display:flex;align-items:center;gap:8px}
+.mcard h4 i{display:inline-block;width:14px;height:4px;border-radius:2px}
+.mcard p{margin:0 0 4px;color:var(--fg-2)}
+.mcard p b{color:var(--fg)}
 .optprog{font-size:12px;color:var(--accent);margin:6px 0 0;min-height:1em}
 .optnote{border:1px solid var(--accent-mid);background:var(--accent-soft);border-radius:var(--r);padding:12px 14px;font-size:14px;line-height:1.65;margin-bottom:16px}
 .optnote b{color:var(--fg)}
@@ -87,7 +97,7 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:10px 0 2px}
 .chip{font:inherit;font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg-2);cursor:pointer}
 .chip:hover{border-color:var(--accent)}
 .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
-.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:8px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:8px}
 .seg button{font:inherit;font-size:13.5px;padding:8px 6px;border:0;background:var(--surface-2);color:var(--fg-2);cursor:pointer}
 .seg button[aria-pressed=true]{background:var(--accent);color:var(--surface);font-weight:700}
 .mixbar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:6px;gap:2px}
@@ -132,7 +142,7 @@ h3{font-size:15px;margin:20px 0 6px}
 .alloc{display:flex;gap:2px;border-radius:8px;overflow:hidden;margin-top:6px}
 .alloc div{padding:8px 10px;min-width:0;font-size:12.5px;line-height:1.35}
 .alloc b{display:block;font-size:15px;font-variant-numeric:tabular-nums}
-.a-cash{background:var(--good-bg);color:var(--fg)} .a-bond{background:var(--warn-bg);color:var(--fg)} .a-stock{background:var(--accent-soft);color:var(--fg)}
+.a-cash{background:var(--good-bg);color:var(--fg)} .a-sb{background:var(--surface-2);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line)} .a-bond{background:var(--warn-bg);color:var(--fg)} .a-stock{background:var(--accent-soft);color:var(--fg)}
 .rules{display:grid;gap:8px;margin-top:10px;font-size:13.5px}
 .rules .r{border-left:3px solid var(--accent);padding:6px 10px;background:var(--surface-2);border-radius:0 8px 8px 0}
 .rules .r b{color:var(--fg)}
@@ -176,7 +186,7 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
       <div class="opt">
         <p class="t">一鍵最佳化</p><p class="hint" style="margin:-4px 0 8px">以目前的報酬假設與勝率目標計算。所有策略都要求：現金存糧至少 1 年、被迫在下跌時賣股 ≤ 5%、錢被領光 ≤ 2%。</p>
         <div class="optbtns">
-          <button class="optbtn" id="opt1" aria-pressed="false"><b>策略 1・勝率最高</b><span>月領維持目前金額，找出勝率最高的股債比、存糧與提領方式</span></button>
+          <button class="optbtn" id="opt1" aria-pressed="false"><b>策略 1・勝率最高</b><span>首年月領維持目前金額，在三種提領方式中找出勝率最高的配置</span></button>
           <button class="optbtn" id="opt2" aria-pressed="false"><b>策略 2・領最多</b><span>勝率達目標的前提下，讓一生總共領到的錢（中位數）最多</span></button>
           <button class="optbtn" id="opt3" aria-pressed="false"><b>策略 3・最穩定</b><span>勝率達目標的前提下，讓運氣差時（P10）的每月購買力最高</span></button>
         </div>
@@ -211,12 +221,21 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
       <div class="ctl">
         <div class="ctl-head"><label for="buf">④ 現金存糧</label><span class="num" id="bufOut">2 年</span></div>
         <input type="range" id="buf" min="0" max="8" step="1" value="2">
-        <p class="hint">以「幾年份生活費」放現金。股市上漲年補滿；下跌年只用債券補，不賣股票。</p>
+        <p class="hint">以「幾年份生活費」放存糧池。股市上漲年補滿；下跌年只用債券補，不賣股票。</p>
+        <div class="lbl" style="margin-top:10px">存糧池放法</div>
+        <div class="seg" role="group" aria-label="存糧池放法">
+          <button id="pCash" aria-pressed="false">全放存款</button>
+          <button id="pSplit" aria-pressed="true">存款＋短債</button>
+          <button id="pShort" aria-pressed="false">全放短債</button>
+        </div>
+        <p class="hint" id="poolHint"></p>
         <div class="lbl" style="margin-top:10px">提領方式</div>
         <div class="seg" role="group" aria-label="提領方式">
-          <button id="mGK" aria-pressed="true">GK 動態提領</button>
-          <button id="mFix" aria-pressed="false">固定（每年 + 通膨）</button>
+          <button id="mGK" aria-pressed="true">GK 動態</button>
+          <button id="mFix" aria-pressed="false">固定＋通膨</button>
+          <button id="mSm" aria-pressed="false">4% 平滑池</button>
         </div>
+        <div id="rateBox" hidden><div class="inrow"><input type="number" id="rate" step="0.1" min="0.5" max="12" value="4"><span class="unit">% / 年，從投資組合取出的比例</span></div></div>
         <p class="hint" id="modeHint">資產相對提領額過低時減 10%、過高時加 10%，每月購買力不低於首年的 85%。</p>
       </div>
 
@@ -224,6 +243,14 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
         <div class="ctl-head"><label for="w0">⑤ 首年每月提領</label><span class="num" id="w0Out">30,000 元</span></div>
         <input type="range" id="w0r" min="10000" max="80000" step="500" value="30000" aria-label="首年每月提領（滑桿）">
         <div class="inrow"><input type="number" id="w0" step="500" min="0" value="30000"><span class="unit">元 / 月</span></div>
+        <p class="hint" id="w0Hint" hidden></p>
+      </div>
+
+      <div class="ctl">
+        <div class="ctl-head"><label for="yrs">⑥ 規劃年期</label><span class="num" id="yrsOut">35 年</span></div>
+        <input type="range" id="yrsr" min="10" max="50" step="1" value="35" aria-label="規劃年期（滑桿）">
+        <div class="inrow"><input type="number" id="yrs" step="1" min="10" max="50" value="35"><span class="unit">年（10～50）</span></div>
+        <p class="hint">要提領幾年。勝率看的是「這段期間每年都領足，而且期末資產仍 ≥ 初始本金」。</p>
       </div>
 
       <details class="adv">
@@ -231,15 +258,15 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
         <div class="advgrid">
           <div><label for="ge">股票年化 %</label><input type="number" id="ge" step="0.1" value="8.0"></div>
           <div><label for="gb">債券年化 %</label><input type="number" id="gb" step="0.1" value="4.5"></div>
-          <div><label for="yrs">年期（年）</label><input type="number" id="yrs" step="1" min="5" max="50" value="35"></div>
           <div><label for="infl">通膨 %</label><input type="number" id="infl" step="0.1" value="2.0"></div>
           <div><label for="fee">ETF 內扣費用 %</label><input type="number" id="fee" step="0.05" min="0" value="0"></div>
-          <div><label for="cashR">現金利率 %</label><input type="number" id="cashR" step="0.1" value="1.5"></div>
+          <div><label for="cashR">台幣存款利率 %</label><input type="number" id="cashR" step="0.1" value="1.5"></div>
+          <div><label for="sbR">短債 ETF 淨報酬 %</label><input type="number" id="sbR" step="0.1" value="3.5"></div>
           <div><label for="floor">GK 最低保障 %</label><input type="number" id="floor" step="5" min="0" max="100" value="85"></div>
           <div><label for="target">勝率目標 %</label><input type="number" id="target" step="1" min="50" max="99" value="85"></div>
           <div><label for="nsim">模擬次數</label><input type="number" id="nsim" step="1000" min="1000" max="20000" value="10000"></div>
         </div>
-        <p class="hint">009826 內扣約 0.6%；VT 約 0.06%（另有股息預扣稅）。</p>
+        <p class="hint">009826 內扣約 0.6%；VT 約 0.06%（另有股息預扣稅）。短債 ETF 淨報酬＝長期平均年化、已扣費用（00719B、00865B、00864B 等），逐年漲跌依美國短天期國庫券 1970–2025 的歷史走勢；未計匯率。</p>
       </details>
     </aside>
 
@@ -273,6 +300,25 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
         <p class="note"><button class="chip" id="allYears" aria-pressed="false">顯示全部年份</button> 「購買力」以通膨換算回今天的錢；P10＝10 次中最差的 1 次，P90＝10 次中最好的 1 次。</p>
       </section>
 
+      <section class="card" aria-labelledby="cmpH">
+        <h2 id="cmpH">三種提領方式比較</h2>
+        <p class="sub" id="cmpSub">同樣的本金、報酬、股債比例與存糧年數，只換提領方式。</p>
+        <div class="tblwrap"><table id="tCmp"><tbody><tr><td>計算中…</td></tr></tbody></table></div>
+        <p class="note">粗體＝該列表現最好的方式；淺藍底＝目前選用的方式。「運氣差」＝10 次中最差的 1 次（P10）。</p>
+        <h3>每月退休金購買力：三種方式並排</h3>
+        <p class="cap" style="font-size:12.5px;color:var(--muted);margin:0 0 6px">實線＝一般情況（中位數），虛線＝運氣差（P10）。已換算成今天的錢。</p>
+        <div class="legend" id="cmpLegend"></div>
+        <div class="plot" id="pCmp"></div>
+        <h3>存糧池放法比較（目前的提領方式）</h3>
+        <p class="cap" style="font-size:12.5px;color:var(--muted);margin:0 0 6px" id="poolCmpSub">同樣的設定，只改存糧池放在哪裡。</p>
+        <div class="tblwrap"><table id="tPool"><tbody><tr><td>計算中…</td></tr></tbody></table></div>
+        <div class="modes">
+          <div class="mcard"><h4><i style="background:var(--accent)"></i>GK 動態提領</h4><p><b>優點：</b>有明確的最低保障線，壞年份收入也不會低於首年購買力的設定比例；好年份會加薪。</p><p><b>缺點：</b>加減薪一次 10%，逐年跳動較大；極端情況仍可能把錢領光。</p></div>
+          <div class="mcard"><h4><i style="background:var(--gold)"></i>固定＋通膨</h4><p><b>優點：</b>收入完全可預期，每年只隨通膨調高，最好向長輩說明。</p><p><b>缺點：</b>不看市場，運氣差時會一路消耗本金，把錢領光的機率最高。</p></div>
+          <div class="mcard"><h4><i style="background:var(--asset)"></i>4% 平滑池</h4><p><b>優點：</b>每年只取資產的固定比例，永遠不會領光；存糧池把波動攤平，逐年變動最小。</p><p><b>缺點：</b>沒有下限也不隨通膨，長期空頭時收入會連續數年慢慢下滑。</p></div>
+        </div>
+      </section>
+
       <section class="card" aria-labelledby="mcH">
         <h2 id="mcH">蒙地卡羅模擬</h2>
         <p class="sub" id="mcSub">10,000 條隨機市場路徑。移動游標可看各年份數值。</p>
@@ -285,7 +331,7 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
           </div>
           <div class="chart">
             <h3>每月退休金（今天的購買力）</h3>
-            <p class="cap">已用通膨換算回今天的錢。GK 模式下，好年份會加薪、壞年份減薪，但不低於保障線。</p>
+            <p class="cap" id="payCap">已用通膨換算回今天的錢。</p>
             <div class="legend"><span><i style="background:var(--accent-soft)"></i>P10–P90</span><span><i style="background:var(--accent-mid)"></i>P25–P75</span><span><i class="line" style="background:var(--accent)"></i>中位數</span><span id="lgFloor"><i class="dash"></i>最低保障</span></div>
             <div class="plot" id="pPay"></div>
           </div>
@@ -307,7 +353,8 @@ const EQ=[-0.0198,0.1836,0.2248,-0.1524,-0.2547,0.3281,0.1340,0.0068,0.1652,0.10
 const BD=[0.1675,0.0979,0.0282,0.0366,0.0199,0.0361,0.1598,0.0129,-0.0078,0.0067,-0.0299,0.0820,0.3281,0.0320,0.1373,0.2571,0.2428,-0.0496,0.0822,0.1769,0.0624,0.1500,0.0936,0.1421,-0.0804,0.2348,0.0143,0.0994,0.1492,-0.0825,0.1666,0.0557,0.1512,0.0038,0.0449,0.0287,0.0196,0.1021,0.2010,-0.1112,0.0846,0.1604,0.0297,-0.0910,0.1075,0.0128,0.0069,0.0280,-0.0002,0.0964,0.1133,-0.0442,-0.1783,0.0388,-0.0164,0.0780];
 const NY=EQ.length;
 function geo(a){let s=0;for(const x of a)s+=Math.log1p(x);return Math.expm1(s/a.length);}
-const G_EQ=geo(EQ),G_BD=geo(BD);
+const TBILL=[0.0639,0.0433,0.0406,0.0704,0.0785,0.0579,0.0498,0.0526,0.0718,0.1005,0.1139,0.1404,0.1109,0.0895,0.0992,0.0772,0.0615,0.0596,0.0689,0.0839,0.0775,0.0554,0.0351,0.0307,0.0437,0.0566,0.0515,0.0520,0.0491,0.0478,0.0600,0.0348,0.0164,0.0103,0.0140,0.0322,0.0485,0.0448,0.0140,0.0015,0.0014,0.0005,0.0009,0.0006,0.0003,0.0005,0.0032,0.0095,0.0197,0.0211,0.0036,0.0004,0.0209,0.0528,0.0518,0.0421];
+const G_EQ=geo(EQ),G_BD=geo(BD),G_TB=geo(TBILL);
 function scaled(a,g,base){const k=(1+g)/(1+base);return a.map(x=>(1+x)*k-1);}
 function mixGeo(ge,gb,w){const e=scaled(EQ,ge,G_EQ),b=scaled(BD,gb,G_BD);return geo(e.map((x,i)=>w*x+(1-w)*b[i]));}
 function solveDelta(target,ge,gb,w){let lo=-0.2,hi=0.2;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(mixGeo(ge+m,gb+m,w)<target)lo=m;else hi=m;}return (lo+hi)/2;}
@@ -319,18 +366,46 @@ function getIdx(N,T){
   for(let r=0;r<N;r++){let t=0;for(let k=0;k<nb;k++){const s=Math.floor(rng()*(NY-4));for(let j=0;j<5&&t<T;j++,t++)IDX[r*T+t]=s+j;}}
   IDX_N=N;IDX_T=T;return IDX;
 }
-// cfg: {T,P0,infl,cashR,fee,w,buf,gk,floor,ge,gb}
+// cfg: {T,P0,infl,cashR,fee,w,buf,mode('gk'|'fixed'|'smooth'),rate,floor,ge,gb}
 function simulate(cfg,W0,N,full){
-  const {T,P0,infl,cashR,fee,w,buf,gk,floor,ge,gb}=cfg;
+  const {T,P0,infl,cashR,fee,w,buf,floor,ge,gb}=cfg;
+  const mode=cfg.mode||(cfg.gk?"gk":"fixed"),gk=mode==="gk",sm=mode==="smooth",rate=(cfg.rate!=null?cfg.rate:0.04);
   const e=scaled(EQ,ge,G_EQ).map(x=>x-fee),b=scaled(BD,gb,G_BD).map(x=>x-fee);
+  const pool=cfg.pool||"cash",sbA=scaled(TBILL,cfg.sbR!=null?cfg.sbR:0.035,G_TB);
+  // 存糧池成長：cash＝全放台幣存款；split＝下一年要用的 1 年放存款、其餘放短債；short＝全放短債
+  const grow=(c,W,sb)=>pool==="cash"?c*(1+cashR):pool==="short"?c*(1+sb):(Math.min(c,W)*(1+cashR)+Math.max(c-W,0)*(1+sb));
+  let pMin=Infinity;const poolAnn=new Float64Array(N);
   const idx=getIdx(N,T);
   const bal=full?new Float64Array(N*T):null,paid=full?new Float64Array(N*T):null;
   const endB=new Float64Array(N),totP=new Float64Array(N),totR=new Float64Array(N);
-  let wins=0,deps=0,forcedN=0,floorN=0,dipN=0;
+  const worstR=new Float64Array(N),ddR=new Float64Array(N),volR=new Float64Array(N),avgM=new Float64Array(N);
+  let wins=0,deps=0,forcedN=0,floorN=0,dipN=0,b85=0,firstPay=0;
   const wr0=W0/P0,up_w=w>0;
   for(let r=0;r<N;r++){
     const c0=Math.min(buf*W0,P0);let cash=c0,S=(P0-c0)*w,B=(P0-c0)-S,W=W0,prev=0,dep=false,forced=false,fh=false,dip=false,tp=0,tr=0;
+    let first=0,minR=0,peak=0,dd=0,lastR=0,cs=0,cs2=0,prevUp=true,pLog=0,pN=0;
     for(let t=0;t<T;t++){
+      const def=Math.pow(1+infl,t);
+      if(sm){
+        // 4% 平滑池：年初從投資組合取出固定比例放進存糧池；股票去年下跌時只從債券取
+        const port=S+B,take=rate*port;let fb,fs;
+        if(prevUp){fb=port>0?take*B/port:0;fs=take-fb;}else{fb=Math.min(take,B);fs=take-fb;}
+        if(!prevUp&&fs>1)forced=true;
+        S-=fs;B-=fb;cash+=take;
+        W=cash/(buf+1);cash-=W;
+        const pn=W;tp+=pn;tr+=pn/def;
+        const real=pn/def;
+        if(t===0){first=real;minR=real;peak=real;}else{const ch=real/lastR-1;cs+=ch;cs2+=ch*ch;if(real<minR)minR=real;if(real>peak)peak=real;const d=real/peak-1;if(d<dd)dd=d;}
+        lastR=real;
+        const i=idx[r*T+t],re=e[i],rb=b[i];
+        S*=1+re;B*=1+rb;{const cp=cash;cash=grow(cash,W,sbA[i]);if(cp>1){const g=cash/cp-1;if(g<pMin)pMin=g;pLog+=Math.log1p(g);pN++;}}prev=w*re+(1-w)*rb;
+        const up=(up_w?re:rb)>=0;prevUp=up;
+        let tot=S+B,mv=w*tot-S;if(!up)mv=Math.max(mv,0);mv=Math.min(mv,B);S+=mv;B-=mv;
+        const bt=S+B+cash;if(bt<P0)dip=true;
+        if(full){bal[r*T+t]=bt;paid[r*T+t]=pn;}
+        if(r===0&&t===0)firstPay=pn;
+        continue;
+      }
       if(t>0){
         if(gk){
           const port=Math.max(S+B+cash,1);let wr=W/port;
@@ -347,9 +422,12 @@ function simulate(cfg,W0,N,full){
       const fs=Math.min(S,need);S-=fs;need-=fs;
       if(fs>1)forced=true;
       if(need>1)dep=true;
-      const pn=W-need;tp+=pn;tr+=pn/Math.pow(1+infl,t);
+      const pn=W-need;tp+=pn;tr+=pn/def;
+      {const real=pn/def;
+       if(t===0){first=real;minR=real;peak=real;}else{const ch=lastR>0?real/lastR-1:-1;cs+=ch;cs2+=ch*ch;if(real<minR)minR=real;if(real>peak)peak=real;const d=peak>0?real/peak-1:0;if(d<dd)dd=d;}
+       lastR=real;if(r===0&&t===0)firstPay=pn;}
       const i=idx[r*T+t],re=e[i],rb=b[i];
-      S*=1+re;B*=1+rb;cash*=1+cashR;prev=w*re+(1-w)*rb;
+      S*=1+re;B*=1+rb;{const cp=cash;cash=grow(cash,W,sbA[i]);if(cp>1){const g=cash/cp-1;if(g<pMin)pMin=g;pLog+=Math.log1p(g);pN++;}}prev=w*re+(1-w)*rb;
       const up=(up_w?re:rb)>=0;
       const needC=Math.max(buf*W-cash,0);let tot=S+B;
       const take=up?Math.min(needC,tot):Math.min(needC,B);
@@ -359,12 +437,20 @@ function simulate(cfg,W0,N,full){
       if(full){bal[r*T+t]=bt;paid[r*T+t]=pn;}
     }
     const end=S+B+cash;endB[r]=end;totP[r]=tp;totR[r]=tr;
+    worstR[r]=first>0?minR/first:0;ddR[r]=dd;avgM[r]=tr/T/12;poolAnn[r]=pN?Math.expm1(pLog/pN):0;
+    const n=T-1,mu=n>0?cs/n:0;volR[r]=n>1?Math.sqrt(Math.max(0,(cs2-n*mu*mu)/(n-1))):0;
+    if(first>0&&minR/first<0.849)b85++;
     if(!dep&&end>=P0)wins++;if(dep)deps++;if(forced)forcedN++;if(fh)floorN++;if(dip)dipN++;
   }
-  return {N,T,win:wins/N,dep:deps/N,forced:forcedN/N,floorHit:floorN/N,dip:dipN/N,endB,totP,totR,bal,paid};
+  return {N,T,mode,win:wins/N,dep:deps/N,forced:forcedN/N,floorHit:floorN/N,dip:dipN/N,below85:b85/N,firstPay,poolMin:pMin===Infinity?0:pMin,poolAnn,endB,totP,totR,worstR,ddR,volR,avgM,bal,paid};
 }
 function q(sorted,p){const n=sorted.length;if(!n)return NaN;const x=(n-1)*p,lo=Math.floor(x),hi=Math.ceil(x);return sorted[lo]+(sorted[hi]-sorted[lo])*(x-lo);}
 function sortedCopy(a){return Float64Array.from(a).sort();}
+function maxRate(cfg,target,N,test){
+  test=test||(r=>r.win>=target);let lo=0,hi=0.12;
+  for(let k=0;k<16;k++){const m=(lo+hi)/2;if(test(simulate({...cfg,rate:m},(cfg.W0||0),N,false)))lo=m;else hi=m;}
+  return lo;
+}
 function maxW0(cfg,target,N){
   let lo=0,hi=cfg.P0*0.15;
   for(let k=0;k<18;k++){const m=(lo+hi)/2;if(simulate(cfg,m,N,false).win>=target)lo=m;else hi=m;}
@@ -374,10 +460,11 @@ function maxW0(cfg,target,N){
 
 /* ---------- UI ---------- */
 const $=id=>document.getElementById(id);
-const DEFAULTS={ge:0.08,gb:0.045,w:0.75,buf:2,gk:true,W0m:30000,P0:1e7,T:35,infl:0.02,fee:0,cashR:0.015,floor:0.85,target:0.85,N:10000,allYears:false,lockRate:false};
+const DEFAULTS={ge:0.08,gb:0.045,w:0.75,buf:2,mode:"gk",rate:0.04,pool:"split",sbR:0.035,W0m:30000,P0:1e7,T:35,infl:0.02,fee:0,cashR:0.015,floor:0.85,target:0.85,N:10000,allYears:false,lockRate:false};
 const S={...DEFAULTS};
 const PRESETS={hist:[G_EQ,G_BD],mid:[0.08,0.045],inst:[0.07,0.049]};
 try{const saved=JSON.parse(localStorage.getItem("retsim")||"null");if(saved&&typeof saved==="object")Object.assign(S,saved);}catch(e){}
+function clampState(){if(!["cash","split","short"].includes(S.pool))S.pool="split";if(!(S.sbR>-0.05))S.sbR=0.035;if(!["gk","fixed","smooth"].includes(S.mode))S.mode=(S.gk===false)?"fixed":"gk";delete S.gk;if(!(S.rate>0))S.rate=0.04;S.T=Math.min(50,Math.max(10,Math.round(S.T||35)));}
 function save(){try{localStorage.setItem("retsim",JSON.stringify(S));}catch(e){}}
 
 const fmtInt=n=>Math.round(n).toLocaleString("zh-TW");
@@ -386,7 +473,10 @@ function fmtTickWan(v){return v>=1e8?(+(v/1e8).toFixed(1))+"億":fmtInt(v/1e4)+"
 function fmtWan(n){if(!isFinite(n))return"–";if(Math.abs(n)>=1e8)return(n/1e8).toFixed(2)+" 億";return fmtInt(n/1e4)+" 萬";}
 const pct=(x,d=0)=>(x*100).toFixed(d)+"%";
 
-function cfg(){return{T:S.T,P0:S.P0,infl:S.infl,cashR:S.cashR,fee:S.fee,w:S.w,buf:S.buf,gk:S.gk,floor:S.floor,ge:S.ge,gb:S.gb};}
+function cfg(){return{T:S.T,P0:S.P0,infl:S.infl,cashR:S.cashR,fee:S.fee,w:S.w,buf:S.buf,mode:S.mode,rate:S.rate,pool:S.pool,sbR:S.sbR,floor:S.floor,ge:S.ge,gb:S.gb,W0:S.W0m*12};}
+const MODE_NAME={gk:"GK 動態提領",fixed:"固定＋通膨",smooth:"4% 平滑池"};
+const MODE_COLOR={gk:"var(--accent)",fixed:"var(--gold)",smooth:"var(--asset)"};
+const smName=()=>`${+(S.rate*100).toFixed(1)}% 平滑池`;
 function portRet(){return mixGeo(S.ge,S.gb,S.w);}
 
 function syncInputs(){
@@ -398,10 +488,21 @@ function syncInputs(){
   const ws=Math.round(S.w*100);$("w").value=ws;$("wOut").textContent=`股 ${ws}：債 ${100-ws}`;
   $("mixS").style.width=ws+"%";$("mixB").style.width=(100-ws)+"%";
   $("buf").value=S.buf;$("bufOut").textContent=S.buf+" 年";
-  $("mGK").setAttribute("aria-pressed",String(S.gk));$("mFix").setAttribute("aria-pressed",String(!S.gk));
-  $("modeHint").textContent=S.gk?`資產相對提領額過低時減 10%、過高時加 10%，每月購買力不低於首年的 ${Math.round(S.floor*100)}%。`:"每年依通膨加薪，不看市場表現；錢不夠時會先賣債、再賣股票。";
+  $("mGK").setAttribute("aria-pressed",String(S.mode==="gk"));$("mFix").setAttribute("aria-pressed",String(S.mode==="fixed"));$("mSm").setAttribute("aria-pressed",String(S.mode==="smooth"));
+  $("mSm").textContent=smName();
+  $("rateBox").hidden=S.mode!=="smooth";
+  for(const [id,v] of [["pCash","cash"],["pSplit","split"],["pShort","short"]])$(id).setAttribute("aria-pressed",String(S.pool===v));
+  $("poolHint").textContent=S.pool==="cash"?`全部放台幣存款，年利率 ${pct(S.cashR,1)}，沒有波動也沒有匯率風險。`
+    :S.pool==="split"?`下一年要用的錢放台幣存款（${pct(S.cashR,1)}），其餘放短天期美債 ETF（淨報酬約 ${pct(S.sbR,1)}）。每年 1 月賣出 1 年份短債移到存款。${S.mode!=="smooth"&&S.buf<=2?"（目前存糧只有 "+S.buf+" 年：付完今年後剩下的剛好是下一年的錢，所以全放存款，效果等同「全部台幣存款」；存糧 3 年以上才會有短債部位。）":""}`
+    :`全部放短天期美債 ETF（淨報酬約 ${pct(S.sbR,1)}），報酬較高，但每年要用的錢也承擔美元匯率波動。`;
+  $("sbR").value=(S.sbR*100).toFixed(1);$("rate").value=(S.rate*100).toFixed(1);
+  $("modeHint").textContent=S.mode==="gk"?`資產相對提領額過低時減 10%、過高時加 10%，每月購買力不低於首年的 ${Math.round(S.floor*100)}%。`
+    :S.mode==="fixed"?"每年依通膨加薪，不看市場表現；錢不夠時會先賣債、再賣股票。"
+    :`每年初從投資組合取出 ${+(S.rate*100).toFixed(1)}% 放進存糧池，當年退休金＝池子 ÷ ${S.buf+1}。股票下跌年只從債券取。不隨通膨調整、沒有最低保障，但不會把錢領光。`;
+  $("w0Hint").hidden=S.mode!=="smooth";
+  $("w0Hint").textContent=`平滑池模式下，這個金額只用來決定存糧池大小（${S.buf} 年 × 年領 = ${fmtWan(S.buf*S.W0m*12)}）；實際月領由取出比例決定。`;
   $("w0").value=S.W0m;$("w0r").value=Math.min(80000,Math.max(10000,S.W0m));$("w0Out").textContent=fmtInt(S.W0m)+" 元";
-  $("p0").value=S.P0/1e4;$("p0r").value=Math.min(5000,Math.max(100,S.P0/1e4));$("p0Out").textContent=fmtWan(S.P0);$("lockRate").checked=!!S.lockRate;$("yrs").value=S.T;$("infl").value=(S.infl*100).toFixed(1);$("fee").value=(S.fee*100).toFixed(2);
+  $("p0").value=S.P0/1e4;$("p0r").value=Math.min(5000,Math.max(100,S.P0/1e4));$("p0Out").textContent=fmtWan(S.P0);$("lockRate").checked=!!S.lockRate;$("yrs").value=S.T;$("yrsr").value=S.T;$("yrsOut").textContent=S.T+" 年";$("infl").value=(S.infl*100).toFixed(1);$("fee").value=(S.fee*100).toFixed(2);
   $("cashR").value=(S.cashR*100).toFixed(1);$("floor").value=Math.round(S.floor*100);$("target").value=Math.round(S.target*100);$("nsim").value=S.N;
   $("allYears").setAttribute("aria-pressed",String(S.allYears));$("allYears").textContent=S.allYears?"只顯示每 5 年":"顯示全部年份";
 }
@@ -413,6 +514,9 @@ function setP0(wan){
 }
 function bind(){
   $("p0r").addEventListener("input",()=>setP0(num("p0r",1000)));
+  const setT=v=>{S.T=Math.min(50,Math.max(10,Math.round(v)));update();};
+  $("yrsr").addEventListener("input",()=>setT(num("yrsr",35)));
+  $("yrs").addEventListener("change",()=>setT(num("yrs",35)));
   $("p0").addEventListener("change",()=>setP0(num("p0",1000)));
   $("lockRate").addEventListener("change",()=>{S.lockRate=$("lockRate").checked;save();});
   $("reset").addEventListener("click",resetAll);
@@ -423,11 +527,16 @@ function bind(){
   document.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click",()=>{[S.ge,S.gb]=PRESETS[b.dataset.preset];update();}));
   $("w").addEventListener("input",()=>{S.w=num("w",75)/100;update();});
   $("buf").addEventListener("input",()=>{S.buf=num("buf",2);update();});
-  $("mGK").addEventListener("click",()=>{S.gk=true;update();});
-  $("mFix").addEventListener("click",()=>{S.gk=false;update();});
+  $("mGK").addEventListener("click",()=>{S.mode="gk";update();});
+  $("mFix").addEventListener("click",()=>{S.mode="fixed";update();});
+  $("mSm").addEventListener("click",()=>{S.mode="smooth";update();});
+  $("pCash").addEventListener("click",()=>{S.pool="cash";update();});
+  $("pSplit").addEventListener("click",()=>{S.pool="split";update();});
+  $("pShort").addEventListener("click",()=>{S.pool="short";update();});
+  $("rate").addEventListener("change",()=>{const v=parseFloat($("rate").value);if(isFinite(v)){S.rate=Math.min(0.12,Math.max(0.005,v/100));update();}else syncInputs();});
   $("w0r").addEventListener("input",()=>{S.W0m=num("w0r",30000);update();});
   $("w0").addEventListener("change",()=>{S.W0m=Math.max(0,num("w0",30000));update();});
-  const adv=[["ge",v=>S.ge=v/100],["gb",v=>S.gb=v/100],["yrs",v=>S.T=Math.min(50,Math.max(5,Math.round(v)))],["infl",v=>S.infl=v/100],["fee",v=>S.fee=Math.max(0,v)/100],["cashR",v=>S.cashR=v/100],["floor",v=>S.floor=Math.min(1,Math.max(0,v/100))],["target",v=>S.target=Math.min(.99,Math.max(.5,v/100))],["nsim",v=>S.N=Math.min(20000,Math.max(1000,Math.round(v/1000)*1000))]];
+  const adv=[["ge",v=>S.ge=v/100],["gb",v=>S.gb=v/100],["infl",v=>S.infl=v/100],["fee",v=>S.fee=Math.max(0,v)/100],["cashR",v=>S.cashR=v/100],["sbR",v=>S.sbR=Math.min(0.1,Math.max(-0.02,v/100))],["floor",v=>S.floor=Math.min(1,Math.max(0,v/100))],["target",v=>S.target=Math.min(.99,Math.max(.5,v/100))],["nsim",v=>S.N=Math.min(20000,Math.max(1000,Math.round(v/1000)*1000))]];
   for(const [id,f] of adv)$(id).addEventListener("change",()=>{const v=parseFloat($(id).value);if(isFinite(v)){f(v);update();}else syncInputs();});
   $("allYears").addEventListener("click",()=>{S.allYears=!S.allYears;syncInputs();renderYearTable();save();});
 }
@@ -440,7 +549,7 @@ function update(){
 }
 
 /* ---------- 一鍵最佳化 ---------- */
-const OPT_W=[0.3,0.4,0.5,0.6,0.7,0.75,0.8,0.9,1.0],OPT_BUF=[1,2,3,4,5,6];
+const OPT_W=[0.4,0.5,0.6,0.7,0.75,0.8,0.9,1.0],OPT_BUF=[1,2,3,4,5,6];
 const MAX_FORCED=0.05,MAX_DEP=0.02;
 const feasible=(r,target)=>r.win>=target&&r.forced<=MAX_FORCED&&r.dep<=MAX_DEP;
 const OPT_NAME={1:"勝率最高",2:"領最多",3:"最穩定"};
@@ -451,28 +560,40 @@ async function optimize(kind){
   if(optBusy)return;optBusy=true;
   const btns=["opt1","opt2","opt3","reset"].map($);btns.forEach(b=>b.disabled=true);
   const base=cfg(),N2=1500,list=[];
-  for(const w of OPT_W)for(const buf of OPT_BUF)for(const gk of[true,false])list.push({w,buf,gk});
+  for(const w of OPT_W)for(const buf of OPT_BUF)for(const mode of["gk","fixed","smooth"])list.push({w,buf,mode});
   let best=null,i=0;
   for(const o of list){
-    const c={...base,w:o.w,buf:o.buf,gk:o.gk};
-    let W,r,score;
-    if(kind===1){W=S.W0m*12;r=simulate(c,W,N2,false);const ok=r.forced<=MAX_FORCED&&r.dep<=MAX_DEP;score=[(ok?1:0)+Math.round(r.win*200)/200,medOf(r.totP)];}
-    else{W=maxW0Fast(c,S.target,N2);r=simulate(c,W,N2,false);score=[kind===2?medOf(r.totP):p10Of(r.totR),medOf(r.totP)];}
-    if(!best||score[0]>best.score[0]+1e-9||(Math.abs(score[0]-best.score[0])<1e-9&&score[1]>best.score[1]))best={...o,W,score};
+    const c={...base,w:o.w,buf:o.buf,mode:o.mode};
+    let W=S.W0m*12,r,score,rate=S.rate;
+    if(o.mode==="smooth"){
+      // 平滑池：月領金額只決定池子大小；策略 1 讓首年月領與目前設定相同，策略 2、3 搜尋可達標的最高取出比例
+      const inv=Math.max(1,S.P0-Math.min(o.buf*W,S.P0));
+      rate=kind===1?Math.min(0.12,W/inv):maxRate({...c,W0:W},S.target,N2,x=>feasible(x,S.target));
+      c.rate=rate;
+    }
+    if(kind===1){r=simulate(c,W,N2,false);const ok=r.forced<=MAX_FORCED&&r.dep<=MAX_DEP;score=[(ok?1:0)+Math.round(r.win*200)/200,medOf(r.totP)];}
+    else{if(o.mode!=="smooth")W=maxW0Fast(c,S.target,N2);r=simulate(c,W,N2,false);
+      if(!feasible(r,S.target)||(o.mode==="smooth"?rate<0.005:W<12*500)){if(++i%5===0)await new Promise(res=>setTimeout(res,0));continue;}
+      score=[kind===2?medOf(r.totP):p10Of(r.totR),medOf(r.totP)];}
+    if(!best||score[0]>best.score[0]+1e-9||(Math.abs(score[0]-best.score[0])<1e-9&&score[1]>best.score[1]))best={...o,W,rate,score};
     if(++i%5===0){$("optProg").textContent=`策略 ${kind}「${OPT_NAME[kind]}」計算中… ${Math.round(i/list.length*100)}%（共 ${list.length} 組配置）`;await new Promise(res=>setTimeout(res,0));}
   }
-  S.w=best.w;S.buf=best.buf;S.gk=best.gk;
-  if(kind!==1){
+  S.w=best.w;S.buf=best.buf;S.mode=best.mode;
+  if(best.mode==="smooth"){
+    S.rate=Math.max(0.005,Math.floor(best.rate*1000)/1000);
+    if(kind!==1)for(let k=0;k<30&&S.rate>0.005&&!feasible(simulate(cfg(),S.W0m*12,S.N,false),S.target);k++)S.rate=Math.round((S.rate-0.001)*1000)/1000;
+  }else if(kind!==1){
     S.W0m=Math.max(500,Math.floor(best.W/12/500)*500);
     // 以完整模擬次數確認仍達標，否則每次降 500 元
     for(let k=0;k<20&&S.W0m>500&&!feasible(simulate(cfg(),S.W0m*12,S.N,false),S.target);k++)S.W0m-=500;
   }
   const fin=simulate(cfg(),S.W0m*12,S.N,false);
   const ws=Math.round(S.w*100);
-  const why={1:`在月領 ${fmtInt(S.W0m)} 元不變的情況下，這組配置的勝率最高。`,
+  const why={1:`在首年月領約 ${fmtInt(S.W0m)} 元不變的情況下，這組配置的勝率最高。`,
              2:`在勝率 ≥ ${pct(S.target)}、被迫賣股 ≤ 5%、錢被領光 ≤ 2% 的前提下，這組配置讓 ${S.T} 年總共領到的錢（中位數）最多。`,
              3:`在勝率 ≥ ${pct(S.target)}、被迫賣股 ≤ 5%、錢被領光 ≤ 2% 的前提下，這組配置讓運氣差（P10）時的平均每月購買力最高，約 ${fmtYuan(p10Of(fin.totR)/S.T/12)}。`}[kind];
-  $("optNote").innerHTML=`<b>已套用策略 ${kind}「${OPT_NAME[kind]}」（本金 ${fmtWan(S.P0)}）：</b>股 ${ws}：債 ${100-ws}、現金存糧 ${S.buf} 年、${S.gk?"GK 動態提領":"固定提領"}、首年每月 ${fmtInt(S.W0m)} 元。${why}`;
+  const modeTxt=S.mode==="smooth"?`${smName()}（每年取出 ${+(S.rate*100).toFixed(1)}%）、首年每月約 ${fmtYuan(fin.firstPay/12)}`:`${MODE_NAME[S.mode]}、首年每月 ${fmtInt(S.W0m)} 元`;
+  $("optNote").innerHTML=`<b>已套用策略 ${kind}「${OPT_NAME[kind]}」（本金 ${fmtWan(S.P0)}）：</b>股 ${ws}：債 ${100-ws}、現金存糧 ${S.buf} 年、${modeTxt}。${why}`;
   $("optNote").hidden=false;$("optProg").textContent=`已比較 ${list.length} 組配置。`;
   ["opt1","opt2","opt3"].forEach((id,j)=>$(id).setAttribute("aria-pressed",String(j+1===kind)));
   btns.forEach(b=>b.disabled=false);optBusy=false;
@@ -507,42 +628,76 @@ function run(){
   renderSummary();renderYearTable();renderCharts();
   // 慢的計算放到下一個 frame
   $("kWins").textContent="計算達標上限中…";
+  if($("tCmp").rows.length)$("tCmp").innerHTML="<tbody><tr><td>計算中…</td></tr></tbody>";
+  if($("tPool").rows.length)$("tPool").innerHTML="<tbody><tr><td>計算中…</td></tr></tbody>";
   if($("tCap").rows.length)$("tCap").innerHTML="<tbody><tr><td>計算中…</td></tr></tbody>";
   clearTimeout(slowTimer);
   slowTimer=setTimeout(()=>{
     if(!last||last.res!==res)return;
-    const alt=simulate({...c,gk:!c.gk},W0,N,false);
-    const mw=maxW0(c,S.target,Math.min(N,4000));
-    last.alt=alt;last.maxW=mw;renderSummary();
+    if(S.mode==="smooth"){last.maxRate=maxRate(c,S.target,Math.min(N,4000));last.maxW=null;}
+    else{last.maxW=maxW0(c,S.target,Math.min(N,4000));last.maxRate=null;}
+    renderSummary();
+    // 三種方式比較
+    const cmp={};
+    for(const m of["gk","fixed","smooth"]){
+      const rr=m===S.mode?res:simulate({...c,mode:m},W0,N,true);
+      cmp[m]=summarizeMode(rr,N,T);
+    }
+    last.cmp=cmp;renderCompare();
+    const pc={};
+    for(const pm of["cash","split","short"]){const rr=pm===S.pool?res:simulate({...c,pool:pm},W0,N,false);
+      pc[pm]={win:rr.win,tot:medOf(rr.totP),avg:medOf(rr.avgM),avg10:p10Of(rr.avgM),end:medOf(rr.endB),pAnn:medOf(rr.poolAnn),pMin:rr.poolMin,vol:medOf(rr.volR),dep:rr.dep};}
+    last.poolCmp=pc;renderPoolCmp();
     const lv=[...new Set([500,800,1000,1500,2000,3000].map(x=>x*1e4).concat([S.P0]))].sort((a,b)=>a-b);
-    last.cap=lv.map(P=>{const cc={...c,P0:P};const m=maxW0(cc,S.target,2000);const r=simulate(cc,W0,4000,false);return{P,m,win:r.win};});
+    last.cap=lv.map(P=>{const cc={...c,P0:P};
+      if(S.mode==="smooth"){const rt=maxRate(cc,S.target,2000);const pool=Math.min(S.buf*W0,P);const m=(pool+rt*(P-pool))/(S.buf+1);const r=simulate(cc,W0,4000,false);return{P,m,win:r.win,rt};}
+      const m=maxW0(cc,S.target,2000);const r=simulate(cc,W0,4000,false);return{P,m,win:r.win};});
     renderCapTable();
   },300);
 }
 
+function poolRule(){
+  if(S.pool==="cash")return"";
+  return S.pool==="split"?`<div class="r"><b>存糧池放法：</b>下一年要用的 1 年份放台幣存款；其餘放短天期美債 ETF（如 00719B、00865B、00864B）。每年 1 月賣出 1 年份短債移到存款帳戶，新補進存糧池的錢買短債。</div>`
+    :`<div class="r"><b>存糧池放法：</b>整個存糧池放短天期美債 ETF，每月需要時賣出換成生活費。</div>`;
+}
 function renderSummary(){
   const {res,eS,tS,trS,avgR,W0,N,T}=last,def=Math.pow(1+S.infl,T),ok=res.win>=S.target;
   $("pill").textContent=ok?"達標":"未達標";$("pill").className="pill "+(ok?"ok":"no");
   $("headline").innerHTML=`在 ${fmtInt(N)} 次模擬中，有 <b>${pct(res.win)}</b> 的情況，${T} 年<b>每年都領足退休金</b>，而且 ${T} 年後資產仍有 <b>${fmtWan(S.P0)}</b> 以上（目標 ${pct(S.target)}）。`;
-  $("kW0").textContent=fmtInt(S.W0m)+" 元";$("kW0s").textContent=`第一年合計 ${fmtWan(W0)}・初始提領率 ${pct(W0/S.P0,2)}`;
+  const fp=res.firstPay;
+  if(S.mode==="smooth"){$("kW0").textContent=fmtYuan(fp/12);$("kW0s").textContent=`存糧池 ${fmtWan(Math.min(S.buf*W0,S.P0))}・每年取出 ${+(S.rate*100).toFixed(1)}%・之後隨資產變動`;}
+  else{$("kW0").textContent=fmtInt(S.W0m)+" 元";$("kW0s").textContent=`第一年合計 ${fmtWan(W0)}・初始提領率 ${pct(W0/S.P0,2)}`;}
   $("kWin").textContent=pct(res.win);
-  $("kWins").textContent=last.maxW!=null?`要達 ${pct(S.target)}，首年每月最多約 ${fmtYuan(last.maxW/12)}`:"計算達標上限中…";
+  $("kWins").textContent=S.mode==="smooth"?(last.maxRate!=null?`要達 ${pct(S.target)}，每年取出比例最多約 ${(last.maxRate*100).toFixed(1)}%`:"計算達標上限中…")
+    :(last.maxW!=null?`要達 ${pct(S.target)}，首年每月最多約 ${fmtYuan(last.maxW/12)}`:"計算達標上限中…");
   $("kTotK").textContent=`${T} 年總共領（中位數）`;$("kEndK").textContent=`${T} 年後剩（中位數）`;
   $("kTot").textContent=fmtWan(q(tS,.5));$("kTots").textContent=`今天的購買力約 ${fmtWan(q(trS,.5))}`;
   $("kEnd").textContent=fmtWan(q(eS,.5));$("kEnds").textContent=`今天的購買力約 ${fmtWan(q(eS,.5)/def)}`;
-  const altTxt=last.alt?`${pct(last.alt.win)}`:"…";
-  const rows=[["平均每月購買力（中位數）",fmtYuan(q(avgR,.5))],["錢在期間內被領光",pct(res.dep,1)],["存糧與債券用完、被迫賣股付生活費",pct(res.forced,1)],
-    [S.gk?"退休金曾降到最低保障":"退休金曾被調降",S.gk?pct(res.floorHit):"不會（固定提領）"],["途中資產曾低於初始資金",pct(res.dip)],[S.gk?"改用固定提領的勝率":"改用 GK 動態提領的勝率",altTxt]];
+  const third=S.mode==="gk"?["退休金曾降到最低保障",pct(res.floorHit)]:S.mode==="fixed"?["退休金曾被調降","不會（固定提領）"]:["退休金曾低於首年購買力 85%",pct(res.below85)];
+  const rows=[["平均每月購買力（中位數）",fmtYuan(q(avgR,.5))],["錢在期間內被領光",S.mode==="smooth"?"不會（比例提領）":pct(res.dep,1)],[S.mode==="smooth"?"下跌年被迫賣股票":"存糧與債券用完、被迫賣股付生活費",pct(res.forced,1)],
+    third,["途中資產曾低於初始資金",pct(res.dip)],["退休金逐年變動幅度（中位）",pct(medOf(res.volR),1)]];
   $("stats").innerHTML=rows.map(([a,b])=>`<div class="stat"><span>${a}</span><span>${b}</span></div>`).join("");
   $("tSum").innerHTML=`<thead><tr><th>情境</th><th>總共領到</th><th>今天購買力</th><th>期末剩</th><th>今天購買力</th></tr></thead><tbody>`+
     [["運氣差（P10）",.1,""],["一般情況（中位數）",.5,"mid"],["運氣好（P90）",.9,""]].map(([l,p,c])=>`<tr class="${c}"><td>${l}</td><td>${fmtWan(q(tS,p))}</td><td>${fmtWan(q(trS,p))}</td><td>${fmtWan(q(eS,p))}</td><td>${fmtWan(q(eS,p)/def)}</td></tr>`).join("")+`</tbody>`;
   // 分配
   const cash=Math.min(S.buf*W0,S.P0),inv=S.P0-cash,st=inv*S.w,bd=inv-st;
   const seg=(cls,name,v)=>v>0?`<div class="${cls}" style="flex:${Math.max(v,S.P0*0.07)}"><b>${fmtWan(v)}</b>${name}</div>`:"";
-  $("alloc").innerHTML=seg("a-cash","現金存糧",cash)+seg("a-bond","債券",bd)+seg("a-stock","全球股票",st);
+  const cash1=S.pool==="cash"?cash:S.pool==="short"?0:Math.min(cash,W0),sbAmt=cash-cash1;
+  $("alloc").innerHTML=seg("a-cash",S.pool==="split"?"台幣存款（1 年）":"台幣存款",cash1)+seg("a-sb","短天期美債 ETF",sbAmt)+seg("a-bond","中期美債（投資部位）",bd)+seg("a-stock","全球股票",st);
   const wr0=W0/S.P0,lo=1/(wr0*1.2),hi=1/(wr0*0.8),fz=1/wr0;
-  let html=`<div class="r"><b>每個月：</b>從現金存糧轉 ${fmtInt(S.W0m)} 元（第一年）。</div>`;
-  if(S.gk){
+  let html=`<div class="r"><b>每個月：</b>從現金存糧轉 ${S.mode==="smooth"?fmtYuan(fp/12):fmtInt(S.W0m)+" 元"}（第一年）。</div>`;
+  if(S.mode==="smooth"){
+    const rp=+(S.rate*100).toFixed(1);
+    html+=`<div class="r"><b>每年第 1 步・取出 ${rp}%：</b>年初把投資組合（股＋債）的 ${rp}% 賣出放進存糧池。股票去年上漲時股債按比例賣；股票去年下跌時只賣債券。</div>
+    <div class="r"><b>每年第 2 步・決定今年退休金：</b>今年年領＝存糧池 ÷ ${S.buf+1}，再除以 12 就是每月轉帳金額。池子剩下的 ${S.buf} 份留到之後幾年。</div>
+    <div class="r"><b>每年第 3 步・再平衡：</b>股票上漲年把股債調回 ${Math.round(S.w*100)}:${100-Math.round(S.w*100)}；下跌年只能賣債買股。</div>`;
+    html+=poolRule();
+    $("rules").innerHTML=html;$("hHistT").textContent=`${T} 年後資產分布`;
+    $("mcSub").textContent=`${fmtInt(N)} 條隨機市場路徑（組合年化 ${pct(portRet(),1)}、扣費 ${pct(S.fee,2)}）。移動游標可看各年份數值。`;
+    return;
+  }
+  if(S.mode==="gk"){
     html+=`<div class="r"><b>每年第 1 步・決定今年月領：</b>先加 ${pct(S.infl,1)}；若去年投資部位虧損且總資產不到年領 ${fz.toFixed(0)} 倍，今年不加。再看「總資產 ÷ 今年年領」：
     <div class="thresh"><div class="t1"><b>低於 ${lo.toFixed(0)} 倍</b>減 10%</div><div class="t2"><b>${lo.toFixed(0)}～${hi.toFixed(0)} 倍</b>不變</div><div class="t3"><b>高於 ${hi.toFixed(0)} 倍</b>加 10%</div></div>
     每月不低於 ${fmtYuan(S.W0m*S.floor)}（此線每年也隨通膨調高）。</div>`;
@@ -550,15 +705,81 @@ function renderSummary(){
     html+=`<div class="r"><b>每年第 1 步：</b>月領固定加 ${pct(S.infl,1)}，不看市場表現。</div>`;
   }
   html+=`<div class="r"><b>每年第 2 步・補存糧：</b>${S.buf>0?`補回 ${S.buf} 年份生活費。`:"不留存糧，生活費直接從投資部位賣出。"}股票上漲年從股債按比例賣出並調回 ${Math.round(S.w*100)}:${100-Math.round(S.w*100)}；股票下跌年只賣債券、股票不動。</div>`;
+  html+=poolRule();
   $("rules").innerHTML=html;
   $("hHistT").textContent=`${T} 年後資產分布`;
   $("mcSub").textContent=`${fmtInt(N)} 條隨機市場路徑（組合年化 ${pct(portRet(),1)}、扣費 ${pct(S.fee,2)}）。移動游標可看各年份數值。`;
 }
 
+function summarizeMode(rr,N,T){
+  const def=t=>Math.pow(1+S.infl,t),r50=[],r10=[],col=new Float64Array(N);
+  for(let t=0;t<T;t++){for(let r=0;r<N;r++)col[r]=rr.paid[r*T+t]/def(t);col.sort();r50.push(q(col,.5)/12);r10.push(q(col,.1)/12);}
+  return{win:rr.win,dep:rr.dep,forced:rr.forced,below85:rr.below85,first:rr.firstPay/12,
+    tot:medOf(rr.totP),avg50:medOf(rr.avgM),avg10:p10Of(rr.avgM),end50:medOf(rr.endB),end10:p10Of(rr.endB),
+    vol:medOf(rr.volR),worst10:p10Of(rr.worstR),dd10:p10Of(rr.ddR),r50,r10};
+}
+function renderCompare(){
+  if(!last||!last.cmp)return;const C=last.cmp,M=["gk","fixed","smooth"],T=last.T;
+  const nm=m=>m==="smooth"?smName():MODE_NAME[m];
+  const rows=[
+    ["首年每月退休金",m=>fmtYuan(C[m].first),null],
+    ["勝率（領足＋期末 ≥ 本金）",m=>pct(C[m].win,1),m=>C[m].win,1],
+    ["錢被領光",m=>pct(C[m].dep,1),m=>-C[m].dep,1],
+    ["下跌年被迫賣股票",m=>pct(C[m].forced,1),m=>-C[m].forced,1],
+    [`${T} 年總共領（中位）`,m=>fmtWan(C[m].tot),m=>C[m].tot,1],
+    ["平均每月購買力（中位）",m=>fmtYuan(C[m].avg50),m=>C[m].avg50,1],
+    ["平均每月購買力（運氣差）",m=>fmtYuan(C[m].avg10),m=>C[m].avg10,1],
+    [`${T} 年後剩（中位）`,m=>fmtWan(C[m].end50),m=>C[m].end50,1],
+    [`${T} 年後剩（運氣差）`,m=>fmtWan(C[m].end10),m=>C[m].end10,1],
+    ["退休金逐年變動幅度（中位）",m=>pct(C[m].vol,1),m=>-C[m].vol,1],
+    ["最差一年購買力 ÷ 首年（運氣差）",m=>pct(C[m].worst10),m=>C[m].worst10,1],
+    ["從最高點的最大跌幅（運氣差）",m=>pct(C[m].dd10),m=>C[m].dd10,1],
+    ["退休金曾低於首年購買力 85%",m=>pct(C[m].below85),m=>-C[m].below85,1]];
+  let h=`<thead><tr><th>項目</th>${M.map(m=>`<th class="${m===S.mode?"cur cmp-th-cur":""}">${nm(m)}${m===S.mode?"（目前）":""}</th>`).join("")}</tr></thead><tbody>`;
+  for(const [lab,f,sc] of rows){
+    let bestM=null;if(sc){const vals=M.map(sc);const mx=Math.max(...vals);if(vals.filter(v=>Math.abs(v-mx)<1e-9).length<3)bestM=M[vals.findIndex(v=>Math.abs(v-mx)<1e-9)];}
+    h+=`<tr><td>${lab}</td>${M.map(m=>`<td class="${m===S.mode?"cur":""} ${m===bestM?"best":""}">${f(m)}</td>`).join("")}</tr>`;
+  }
+  $("tCmp").innerHTML=h+"</tbody>";
+  $("cmpSub").textContent=`同樣的本金 ${fmtWan(S.P0)}、組合年化 ${pct(portRet(),1)}、股 ${Math.round(S.w*100)}：債 ${100-Math.round(S.w*100)}、存糧 ${S.buf} 年，只換提領方式。GK 與固定提領從每月 ${fmtInt(S.W0m)} 元開始；平滑池每年取出 ${+(S.rate*100).toFixed(1)}%。`;
+  $("cmpLegend").innerHTML=M.map(m=>`<span><i class="line" style="background:${MODE_COLOR[m]}"></i>${nm(m)}</span>`).join("");
+  lineChart($("pCmp"),last.yrs,M.map(m=>({name:nm(m),color:MODE_COLOR[m],p50:C[m].r50,p10:C[m].r10})));
+}
+function lineChart(el,yrs,series){
+  const T=yrs.length,x=scaleLin(1,Math.max(2,T),M.l,VW-M.r);
+  let mx=0;for(const s of series)for(const v of s.p50)mx=Math.max(mx,v);
+  const st=niceStep(mx*1.1,5),ymax=Math.ceil(mx*1.1/st)*st,y=scaleLin(0,ymax,VH-M.b,M.t);
+  let g=`<svg viewBox="0 0 ${VW} ${VH}" role="img" aria-label="三種提領方式每月購買力比較">`;
+  for(let v=0;v<=ymax+1e-9;v+=st)g+=`<line x1="${M.l}" x2="${VW-M.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="var(--line)"/><text x="${M.l-8}" y="${(y(v)+4).toFixed(1)}" text-anchor="end">${(v/1e4).toFixed(v%1e4?1:0)}萬</text>`;
+  const xt=[1,...Array.from({length:Math.floor(T/5)},(_,i)=>(i+1)*5)];
+  for(const v of xt)g+=`<text x="${x(v).toFixed(1)}" y="${VH-M.b+18}" text-anchor="middle">${v}</text>`;
+  g+=`<text x="${(M.l+VW-M.r)/2}" y="${VH-2}" text-anchor="middle">第幾年</text>`;
+  const xs=yrs.map(x);
+  for(const s of series){g+=`<path d="${pathOf(xs,s.p10.map(y))}" fill="none" stroke="${s.color}" stroke-width="1.5" stroke-dasharray="5 4" opacity=".85"/>`;}
+  for(const s of series){g+=`<path d="${pathOf(xs,s.p50.map(y))}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round"/>`;}
+  g+=`<line class="cx" x1="0" x2="0" y1="${M.t}" y2="${VH-M.b}" stroke="var(--fg-2)" opacity="0"/>`;
+  g+=`<rect x="${M.l}" y="${M.t}" width="${VW-M.l-M.r}" height="${VH-M.t-M.b}" fill="transparent" class="hit"/></svg><div class="tip" hidden></div>`;
+  el.innerHTML=g;
+  const svg=el.querySelector("svg"),tip=el.querySelector(".tip"),xl=el.querySelector(".cx");
+  const move=ev=>{const rc=svg.getBoundingClientRect(),sx=(ev.clientX-rc.left)*VW/rc.width;
+    const t=Math.min(T,Math.max(1,Math.round(1+(sx-M.l)/(VW-M.l-M.r)*(Math.max(2,T)-1))))-1,px=x(t+1);
+    xl.setAttribute("x1",px);xl.setAttribute("x2",px);xl.setAttribute("opacity",".5");
+    tip.innerHTML=`<b>第 ${t+1} 年・每月購買力</b>`+series.map(s=>`<br><span style="color:${s.color}">●</span> ${s.name}：<b>${fmtYuan(s.p50[t])}</b>（運氣差 ${fmtYuan(s.p10[t])}）`).join("");
+    tip.hidden=false;const tw=tip.offsetWidth,left=px*rc.width/VW;tip.style.left=Math.min(rc.width-tw,Math.max(0,left+12>rc.width-tw?left-tw-12:left+12))+"px";tip.style.top="8px";};
+  const hit=el.querySelector(".hit");hit.addEventListener("pointermove",move);hit.addEventListener("pointerdown",move);hit.addEventListener("pointerleave",()=>{tip.hidden=true;xl.setAttribute("opacity","0");});
+}
+function renderPoolCmp(){
+  if(!last||!last.poolCmp)return;const C=last.poolCmp,base=C.cash,T=last.T;
+  const nm={cash:"全部台幣存款",split:"1 年存款＋短債",short:"全部短債"};
+  const diff=(v,b,f,eps)=>{const d=v-b;return Math.abs(d)<(eps||1e-9)?"":`<span style="color:${d>0?"var(--good)":"var(--bad)"};font-size:12px">（${d>0?"+":""}${f(d)}）</span>`;};
+  $("tPool").innerHTML=`<thead><tr><th>存糧放法</th><th>存糧池年化（中位）</th><th>存糧池最差一年</th><th>勝率</th><th>${T} 年總共領（中位）</th><th>平均每月購買力（中位）</th><th>平均每月購買力（運氣差）</th><th>${T} 年後剩（中位）</th><th>逐年變動</th></tr></thead><tbody>`+
+    ["cash","split","short"].map(k=>{const o=C[k];return`<tr class="${k===S.pool?"mid":""}"><td>${nm[k]}${k===S.pool?"（目前）":""}</td><td>${pct(o.pAnn,1)}</td><td>${pct(o.pMin,1)}</td><td>${pct(o.win,1)} ${diff(o.win,base.win,d=>(d*100).toFixed(1)+" 點",0.0005)}</td><td>${fmtWan(o.tot)} ${diff(o.tot,base.tot,d=>fmtWan(d),5000)}</td><td>${fmtYuan(o.avg)} ${diff(o.avg,base.avg,d=>fmtYuan(d),50)}</td><td>${fmtYuan(o.avg10)}</td><td>${fmtWan(o.end)}</td><td>${pct(o.vol,1)}</td></tr>`;}).join("")+"</tbody>";
+  $("poolCmpSub").textContent=`同樣的設定（${S.mode==="smooth"?smName():MODE_NAME[S.mode]}、存糧 ${S.buf} 年），只改存糧池放在哪裡。括號內是相對「全部台幣存款」的差異。存款利率 ${pct(S.cashR,1)}、短債淨報酬約 ${pct(S.sbR,1)}，未計匯率。`;
+}
 function renderCapTable(){
   if(!last||!last.cap)return;
-  $("tCap").innerHTML=`<thead><tr><th>初始本金</th><th>達標最高月領</th><th>對應提領率</th><th>每 100 萬可領（月）</th><th>月領 ${fmtInt(S.W0m)} 元的勝率</th></tr></thead><tbody>`+
-    last.cap.map(o=>`<tr class="${o.P===S.P0?"mid":""}"><td>${fmtWan(o.P)}</td><td>${fmtYuan(o.m/12)}</td><td>${pct(o.m/o.P,2)}</td><td>${fmtYuan(o.m/12/(o.P/1e6))}</td><td>${pct(o.win)}</td></tr>`).join("")+`</tbody>`;
+  $("tCap").innerHTML=`<thead><tr><th>初始本金</th><th>${S.mode==="smooth"?"達標時首年月領":"達標最高月領"}</th><th>${S.mode==="smooth"?"達標最高取出比例":"對應提領率"}</th><th>每 100 萬可領（月）</th><th>${S.mode==="smooth"?"目前設定的勝率":`月領 ${fmtInt(S.W0m)} 元的勝率`}</th></tr></thead><tbody>`+
+    last.cap.map(o=>`<tr class="${o.P===S.P0?"mid":""}"><td>${fmtWan(o.P)}</td><td>${fmtYuan(o.m/12)}</td><td>${o.rt!=null?pct(o.rt,1):pct(o.m/o.P,2)}</td><td>${fmtYuan(o.m/12/(o.P/1e6))}</td><td>${pct(o.win)}</td></tr>`).join("")+`</tbody>`;
 }
 function renderYearTable(){
   if(!last)return;const {P,T}=last;
@@ -653,16 +874,17 @@ function renderCharts(){
   fanChart($("pBal"),{label:"資產走勢扇形圖",yrs,log:true,min:minB,max:maxB,p10:P.b10,p25:P.b25,p50:P.b50,p75:P.b75,p90:P.b90,samples,ref:S.P0,
     soft:"var(--asset-soft)",midc:"var(--asset-mid)",line:"var(--asset)",fmtTick:fmtTickWan,
     tip:t=>`<b>第 ${t+1} 年底</b><br>運氣好 P90：${fmtWan(P.b90[t])}<br>中位數：<b>${fmtWan(P.b50[t])}</b><br>運氣差 P10：${fmtWan(P.b10[t])}<br>累計已領（中位）：${fmtWan(P.c50[t])}`});
-  const floorArr=S.gk?yrs.map(()=>S.W0m*S.floor):null;
-  const maxR=Math.max(...P.r90)*1.1,minR=0;
-  fanChart($("pPay"),{label:"每月退休金扇形圖",yrs,log:false,min:minR,max:Math.max(maxR,S.W0m*1.3),p10:P.r10,p25:P.r25,p50:P.r50,p75:P.r75,p90:P.r90,refArr:floorArr,
+  const floorArr=S.mode==="gk"?yrs.map(()=>S.W0m*S.floor):null;
+  const maxR=Math.max(...P.r90)*1.1,minR=0,firstM=last.res.firstPay/12;
+  fanChart($("pPay"),{label:"每月退休金扇形圖",yrs,log:false,min:minR,max:Math.max(maxR,firstM*1.3),p10:P.r10,p25:P.r25,p50:P.r50,p75:P.r75,p90:P.r90,refArr:floorArr,
     soft:"var(--accent-soft)",midc:"var(--accent-mid)",line:"var(--accent)",fmtTick:v=>(v/1e4).toFixed(v%1e4?1:0)+"萬",
     tip:t=>`<b>第 ${t+1} 年・每月</b><br>運氣好 P90：${fmtYuan(P.r90[t])}<br>中位數：<b>${fmtYuan(P.r50[t])}</b><br>運氣差 P10：${fmtYuan(P.r10[t])}<br>實際入帳（中位）：${fmtYuan(P.n50[t])}`});
-  $("lgFloor").hidden=!S.gk;
+  $("lgFloor").hidden=S.mode!=="gk";
+  $("payCap").textContent="已用通膨換算回今天的錢。"+(S.mode==="gk"?"GK：好年份加薪、壞年份減薪，但不低於保障線。":S.mode==="fixed"?"固定提領：購買力不變，直到錢領光為止。":"平滑池：跟著資產慢慢變動，沒有下限。");
   histChart($("pHist"));
 }
 
-bind();syncInputs();run();
+clampState();bind();syncInputs();run();
 </script>
 
 </body></html>
