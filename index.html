@@ -176,7 +176,7 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
     <div>
       <div class="eyebrow">初始本金・股債配置・現金存糧・動態提領・10,000 次蒙地卡羅</div>
       <h1>家庭退休金模擬器</h1>
-      <p>調整左側參數，結果與圖表會立即重算。報酬以 1970–2025 年全球股市（MSCI 世界指數）與美國 10 年公債的逐年實際漲跌為底，依你設定的年化報酬等比例調整後，以 5 年為一段隨機抽樣。</p>
+      <p>調整左側參數，結果與圖表會立即重算。報酬以 1970–2025 年全球股市（MSCI 世界指數）與美國 10 年公債（代表 AGGU 等債券部位）的逐年實際漲跌為底，依你設定的年化報酬等比例調整後，以 5 年為一段隨機抽樣。</p>
     </div>
   </header>
 
@@ -215,7 +215,7 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
         <div class="ctl-head"><label for="w">③ 股債比例</label><span class="num" id="wOut">股 75：債 25</span></div>
         <input type="range" id="w" min="0" max="100" step="5" value="75" aria-describedby="wHint">
         <div class="mixbar" aria-hidden="true"><span id="mixS" style="background:var(--accent);width:75%"></span><span id="mixB" style="background:var(--gold);width:25%"></span></div>
-        <p class="hint" id="wHint">投資部位（不含現金存糧）的比例，每年再平衡一次。</p>
+        <p class="hint" id="wHint">投資部位（不含現金存糧）的比例，每年再平衡一次。股票＝VALU（全球全市值），債券＝AGGU（全球綜合債，美元避險）。</p>
       </div>
 
       <div class="ctl">
@@ -259,14 +259,20 @@ footer.src{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.7}
           <div><label for="ge">股票年化 %</label><input type="number" id="ge" step="0.1" value="8.0"></div>
           <div><label for="gb">債券年化 %</label><input type="number" id="gb" step="0.1" value="4.5"></div>
           <div><label for="infl">通膨 %</label><input type="number" id="infl" step="0.1" value="2.0"></div>
-          <div><label for="fee">ETF 內扣費用 %</label><input type="number" id="fee" step="0.05" min="0" value="0"></div>
+          <div><label for="fee">投資部位總成本 %</label><input type="number" id="fee" step="0.01" min="0" value="0.23"></div>
           <div><label for="cashR">台幣存款利率 %</label><input type="number" id="cashR" step="0.1" value="1.5"></div>
           <div><label for="sbR">短債 ETF 淨報酬 %</label><input type="number" id="sbR" step="0.1" value="3.5"></div>
           <div><label for="floor">GK 最低保障 %</label><input type="number" id="floor" step="5" min="0" max="100" value="85"></div>
           <div><label for="target">勝率目標 %</label><input type="number" id="target" step="1" min="50" max="99" value="85"></div>
           <div><label for="nsim">模擬次數</label><input type="number" id="nsim" step="1000" min="1000" max="20000" value="10000"></div>
         </div>
-        <p class="hint">009826 內扣約 0.6%；VT 約 0.06%（另有股息預扣稅）。短債 ETF 淨報酬＝長期平均年化、已扣費用（00719B、00865B、00864B 等），逐年漲跌依美國短天期國庫券 1970–2025 的歷史走勢；未計匯率。</p>
+        <div class="chips" role="group" aria-label="投資標的成本">
+          <button class="chip" data-fee="0.0023">VALU＋AGGU 0.23%</button>
+          <button class="chip" data-fee="0.0045">VT＋BNDW 0.45%</button>
+          <button class="chip" data-fee="0.0075">009826＋00697B 0.75%</button>
+          <button class="chip" data-fee="0">不計費用</button>
+        </div>
+        <p class="hint">投資部位總成本＝ETF 內扣加股息預扣稅，依股 75／債 25 加權。VALU 內扣 0.07%＋預扣稅約 0.2%，AGGU 內扣 0.10%。短債 ETF 淨報酬＝長期平均年化、已扣費用（台股 00719B、00865B、00864B，或愛爾蘭 IBTA 等），逐年漲跌依美國短天期國庫券 1970–2025 的歷史走勢；未計匯率。</p>
       </details>
     </aside>
 
@@ -460,7 +466,7 @@ function maxW0(cfg,target,N){
 
 /* ---------- UI ---------- */
 const $=id=>document.getElementById(id);
-const DEFAULTS={ge:0.08,gb:0.045,w:0.75,buf:2,mode:"gk",rate:0.04,pool:"split",sbR:0.035,W0m:30000,P0:1e7,T:35,infl:0.02,fee:0,cashR:0.015,floor:0.85,target:0.85,N:10000,allYears:false,lockRate:false};
+const DEFAULTS={ge:0.08,gb:0.045,w:0.75,buf:2,mode:"gk",rate:0.04,pool:"split",sbR:0.035,W0m:30000,P0:1e7,T:35,infl:0.02,fee:0.0023,cashR:0.015,floor:0.85,target:0.85,N:10000,allYears:false,lockRate:false};
 const S={...DEFAULTS};
 const PRESETS={hist:[G_EQ,G_BD],mid:[0.08,0.045],inst:[0.07,0.049]};
 try{const saved=JSON.parse(localStorage.getItem("retsim")||"null");if(saved&&typeof saved==="object")Object.assign(S,saved);}catch(e){}
@@ -495,7 +501,8 @@ function syncInputs(){
   $("poolHint").textContent=S.pool==="cash"?`全部放台幣存款，年利率 ${pct(S.cashR,1)}，沒有波動也沒有匯率風險。`
     :S.pool==="split"?`下一年要用的錢放台幣存款（${pct(S.cashR,1)}），其餘放短天期美債 ETF（淨報酬約 ${pct(S.sbR,1)}）。每年 1 月賣出 1 年份短債移到存款。${S.mode!=="smooth"&&S.buf<=2?"（目前存糧只有 "+S.buf+" 年：付完今年後剩下的剛好是下一年的錢，所以全放存款，效果等同「全部台幣存款」；存糧 3 年以上才會有短債部位。）":""}`
     :`全部放短天期美債 ETF（淨報酬約 ${pct(S.sbR,1)}），報酬較高，但每年要用的錢也承擔美元匯率波動。`;
-  $("sbR").value=(S.sbR*100).toFixed(1);$("rate").value=(S.rate*100).toFixed(1);
+  $("sbR").value=(S.sbR*100).toFixed(1);
+  document.querySelectorAll("[data-fee]").forEach(b=>b.setAttribute("aria-pressed",String(Math.abs(+b.dataset.fee-S.fee)<1e-5)));$("rate").value=(S.rate*100).toFixed(1);
   $("modeHint").textContent=S.mode==="gk"?`資產相對提領額過低時減 10%、過高時加 10%，每月購買力不低於首年的 ${Math.round(S.floor*100)}%。`
     :S.mode==="fixed"?"每年依通膨加薪，不看市場表現；錢不夠時會先賣債、再賣股票。"
     :`每年初從投資組合取出 ${+(S.rate*100).toFixed(1)}% 放進存糧池，當年退休金＝池子 ÷ ${S.buf+1}。股票下跌年只從債券取。不隨通膨調整、沒有最低保障，但不會把錢領光。`;
@@ -538,6 +545,7 @@ function bind(){
   $("w0").addEventListener("change",()=>{S.W0m=Math.max(0,num("w0",30000));update();});
   const adv=[["ge",v=>S.ge=v/100],["gb",v=>S.gb=v/100],["infl",v=>S.infl=v/100],["fee",v=>S.fee=Math.max(0,v)/100],["cashR",v=>S.cashR=v/100],["sbR",v=>S.sbR=Math.min(0.1,Math.max(-0.02,v/100))],["floor",v=>S.floor=Math.min(1,Math.max(0,v/100))],["target",v=>S.target=Math.min(.99,Math.max(.5,v/100))],["nsim",v=>S.N=Math.min(20000,Math.max(1000,Math.round(v/1000)*1000))]];
   for(const [id,f] of adv)$(id).addEventListener("change",()=>{const v=parseFloat($(id).value);if(isFinite(v)){f(v);update();}else syncInputs();});
+  document.querySelectorAll("[data-fee]").forEach(b=>b.addEventListener("click",()=>{S.fee=+b.dataset.fee;update();}));
   $("allYears").addEventListener("click",()=>{S.allYears=!S.allYears;syncInputs();renderYearTable();save();});
 }
 
@@ -658,7 +666,7 @@ function run(){
 
 function poolRule(){
   if(S.pool==="cash")return"";
-  return S.pool==="split"?`<div class="r"><b>存糧池放法：</b>下一年要用的 1 年份放台幣存款；其餘放短天期美債 ETF（如 00719B、00865B、00864B）。每年 1 月賣出 1 年份短債移到存款帳戶，新補進存糧池的錢買短債。</div>`
+  return S.pool==="split"?`<div class="r"><b>存糧池放法：</b>下一年要用的 1 年份放台幣存款；其餘放短天期美債 ETF（台股 00719B、00865B、00864B，或愛爾蘭 IBTA）。每年 1 月賣出 1 年份短債移到存款帳戶，新補進存糧池的錢買短債。</div>`
     :`<div class="r"><b>存糧池放法：</b>整個存糧池放短天期美債 ETF，每月需要時賣出換成生活費。</div>`;
 }
 function renderSummary(){
@@ -683,8 +691,8 @@ function renderSummary(){
   // 分配
   const cash=Math.min(S.buf*W0,S.P0),inv=S.P0-cash,st=inv*S.w,bd=inv-st;
   const seg=(cls,name,v)=>v>0?`<div class="${cls}" style="flex:${Math.max(v,S.P0*0.07)}"><b>${fmtWan(v)}</b>${name}</div>`:"";
-  const cash1=S.pool==="cash"?cash:S.pool==="short"?0:Math.min(cash,W0),sbAmt=cash-cash1;
-  $("alloc").innerHTML=seg("a-cash",S.pool==="split"?"台幣存款（1 年）":"台幣存款",cash1)+seg("a-sb","短天期美債 ETF",sbAmt)+seg("a-bond","中期美債（投資部位）",bd)+seg("a-stock","全球股票",st);
+  const cash1=S.pool==="cash"?cash:S.pool==="short"?0:Math.min(cash,2*W0),sbAmt=cash-cash1;
+  $("alloc").innerHTML=seg("a-cash",S.pool==="split"?"台幣存款（今年＋明年）":"台幣存款",cash1)+seg("a-sb","短天期美債 ETF",sbAmt)+seg("a-bond","全球債券 AGGU",bd)+seg("a-stock","全球股票 VALU",st);
   const wr0=W0/S.P0,lo=1/(wr0*1.2),hi=1/(wr0*0.8),fz=1/wr0;
   let html=`<div class="r"><b>每個月：</b>從現金存糧轉 ${S.mode==="smooth"?fmtYuan(fp/12):fmtInt(S.W0m)+" 元"}（第一年）。</div>`;
   if(S.mode==="smooth"){
